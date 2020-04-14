@@ -489,6 +489,14 @@ module FastExcel
         end
         add_text_width(value.url, format, cell_number) if auto_width?
         @url_counter += 1
+      elsif value.is_a?(String) && (value.start_with?("http://") || value.start_with?("https://") || value.start_with?("ftp://") || value.start_with?("mailto:")) # URLs passed in as a String without using FastExcel::URL.
+        if @url_counter >= 65_530
+          # Exceeded the maximum URLs in a worksheet: 65,530.
+          write_string(row_number, cell_number, value.to_s, format)
+        else
+          write_url(row_number, cell_number, value, format)
+        end
+        @url_counter += 1
       else
         write_string(row_number, cell_number, value.to_s, format)
         add_text_width(value, format, cell_number) if auto_width?
