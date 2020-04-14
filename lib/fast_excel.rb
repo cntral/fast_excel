@@ -428,6 +428,7 @@ module FastExcel
       @is_open = true
       @col_formats = {}
       @last_row_number = -1
+      @url_counter = 0
       super(struct)
     end
 
@@ -480,8 +481,14 @@ module FastExcel
       elsif value.is_a?(FastExcel::Formula)
         write_formula(row_number, cell_number, value.fml, format)
       elsif value.is_a?(FastExcel::URL)
-        write_url(row_number, cell_number, value.url, format)
+        if @url_counter >= 65_530
+          # Exceeded the maximum URLs in a worksheet: 65,530.
+          write_string(row_number, cell_number, value.to_s, format)
+        else
+          write_url(row_number, cell_number, value.url, format)
+        end
         add_text_width(value.url, format, cell_number) if auto_width?
+        @url_counter += 1
       else
         write_string(row_number, cell_number, value.to_s, format)
         add_text_width(value, format, cell_number) if auto_width?
