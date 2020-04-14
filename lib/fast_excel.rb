@@ -468,6 +468,10 @@ module FastExcel
       elsif value.is_a?(Time) || defined?(DateTime) && value.is_a?(DateTime)
         format ||= workbook.number_format("yyyy-mm-dd hh:mm:ss")
         write_datetime(row_number, cell_number, FastExcel.lxw_datetime(value.to_datetime), format)
+      elsif value.is_a?(String) && value.match(/^(?:[01]\d|2[0123]):(?:[012345]\d):(?:[012345]\d)$/) # 24 hour times provided in the exact format hh:mm:ss.
+        format ||= workbook.number_format("hh:mm:ss")
+        fraction_of_the_day = Time.parse( value ).seconds_since_midnight / 86_400 # 86400 seconds in a 24 hour day.
+        write_number( row_number, cell_number, fraction_of_the_day, format )
       elsif defined?(Money) && value.is_a?(Money)
         format ||= workbook.number_format("$#,##0.00")
         write_number(row_number, cell_number, value.to_d, format)
