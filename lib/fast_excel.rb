@@ -463,6 +463,7 @@ module FastExcel
       if value.is_a?(Numeric)
         write_number(row_number, cell_number, value, format)
       elsif defined?(Date) && value.is_a?(Date)
+        format ||= workbook.number_format("yyyy-mm-dd")
         write_datetime(row_number, cell_number, FastExcel.lxw_datetime(value.to_datetime), format)
       elsif value.is_a?(Time)
         write_number(row_number, cell_number, FastExcel.date_num(value), format)
