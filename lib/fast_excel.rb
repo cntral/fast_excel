@@ -463,28 +463,36 @@ module FastExcel
 
       if value.is_a?(Numeric)
         write_number(row_number, cell_number, value, format)
+
       elsif value.is_a?(String) && value.match(/^(\d|\.)*%$/) # Percentages. e.g. "99%", "99.0003%", "99.00003%" but not "My percentage is 99.003%"
         value = value.delete_suffix( "%" )
         decimal_places = value.split( "." ).second&.size || 2 # Defaults to 2 decimal places if none are provided in the String.
         format ||= workbook.number_format("0." + ( "0" * decimal_places ) + "%")
         write_number(row_number, cell_number, value.to_d / 100, format)
+
       elsif defined?(Date) && value.is_a?(Date)
         format ||= workbook.number_format("yyyy-mm-dd")
         write_datetime(row_number, cell_number, FastExcel.lxw_datetime(value.to_datetime), format)
+
       elsif value.is_a?(Time) || defined?(DateTime) && value.is_a?(DateTime)
         format ||= workbook.number_format("yyyy-mm-dd hh:mm:ss")
         write_datetime(row_number, cell_number, FastExcel.lxw_datetime(value.to_datetime), format)
+
       elsif value.is_a?(String) && value.match(/^(?:[01]\d|2[0123]):(?:[012345]\d):(?:[012345]\d)$/) # 24 hour times provided in the exact format hh:mm:ss.
         format ||= workbook.number_format("hh:mm:ss")
         fraction_of_the_day = Time.parse( value ).seconds_since_midnight / 86_400 # 86400 seconds in a 24 hour day.
         write_number( row_number, cell_number, fraction_of_the_day, format )
+
       elsif defined?(Money) && value.is_a?(Money)
         format ||= workbook.number_format("$#,##0.00")
         write_number(row_number, cell_number, value.to_d, format)
+
       elsif value.is_a?(TrueClass) || value.is_a?(FalseClass)
         write_boolean(row_number, cell_number, value ? 1 : 0, format)
+
       elsif value.is_a?(FastExcel::Formula)
         write_formula(row_number, cell_number, value.fml, format)
+
       elsif value.is_a?(FastExcel::URL)
         if @url_counter >= 65_530
           # Exceeded the maximum URLs in a worksheet: 65,530.
@@ -494,6 +502,7 @@ module FastExcel
         end
         add_text_width(value.url, format, cell_number) if auto_width?
         @url_counter += 1
+
       elsif value.is_a?(String) && (value.start_with?("http://") || value.start_with?("https://") || value.start_with?("ftp://") || value.start_with?("mailto:")) # URLs passed in as a String without using FastExcel::URL.
         if @url_counter >= 65_530
           # Exceeded the maximum URLs in a worksheet: 65,530.
@@ -502,6 +511,7 @@ module FastExcel
           write_url(row_number, cell_number, value, format)
         end
         @url_counter += 1
+
       else
         write_string(row_number, cell_number, value.to_s, format)
         add_text_width(value, format, cell_number) if auto_width?
