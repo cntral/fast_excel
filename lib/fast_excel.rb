@@ -463,6 +463,11 @@ module FastExcel
 
       if value.is_a?(Numeric)
         write_number(row_number, cell_number, value, format)
+      elsif value.is_a?(String) && value.match(/^(\d|\.)*%$/) # Percentages. e.g. "99%", "99.0003%", "99.00003%" but not "My percentage is 99.003%"
+        value = value.delete_suffix( "%" )
+        decimal_places = value.split( "." ).second&.size || 2 # Defaults to 2 decimal places if none are provided in the String.
+        format ||= workbook.number_format("0." + ( "0" * decimal_places ) + "%")
+        write_number(row_number, cell_number, value.to_d / 100, format)
       elsif defined?(Date) && value.is_a?(Date)
         format ||= workbook.number_format("yyyy-mm-dd")
         write_datetime(row_number, cell_number, FastExcel.lxw_datetime(value.to_datetime), format)
