@@ -512,6 +512,9 @@ module FastExcel
         end
         @url_counter += 1
 
+      elsif defined?(Alchemist::NumericConversion) && value.is_a?(Alchemist::NumericConversion)
+        write_number(row_number, cell_number, value.value, format)
+
       else
         write_string(row_number, cell_number, value.to_s, format)
         add_text_width(value, format, cell_number) if auto_width?
