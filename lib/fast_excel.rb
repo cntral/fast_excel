@@ -483,10 +483,6 @@ module FastExcel
         fraction_of_the_day = Time.parse( value ).seconds_since_midnight / 86_400 # 86400 seconds in a 24 hour day.
         write_number( row_number, cell_number, fraction_of_the_day, format )
 
-      elsif defined?(Money) && value.is_a?(Money)
-        format ||= workbook.number_format("$#,##0.00")
-        write_number(row_number, cell_number, value.to_d, format)
-
       elsif value.is_a?(TrueClass) || value.is_a?(FalseClass)
         write_boolean(row_number, cell_number, value ? 1 : 0, format)
 
@@ -514,6 +510,10 @@ module FastExcel
 
       elsif defined?(Alchemist::NumericConversion) && value.is_a?(Alchemist::NumericConversion)
         write_number(row_number, cell_number, value.value, format)
+
+      elsif defined?(Money) && value.is_a?(Money)
+        format ||= workbook.number_format("$#,##0.00")
+        write_number(row_number, cell_number, value.to_d, format)
 
       else
         write_string(row_number, cell_number, value.to_s, format)
