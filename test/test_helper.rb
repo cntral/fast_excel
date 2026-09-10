@@ -9,6 +9,11 @@ require 'minitest/autorun'
 require "minitest/reporters"
 require 'pp'
 require 'date'
+require 'time'                                      # Time.parse
+require 'bigdecimal/util'                           # String#to_d
+require 'active_support'
+require 'active_support/core_ext/array/access'      # Array#second
+require 'active_support/core_ext/time/calculations' # Time#seconds_since_midnight
 
 
 Minitest::Reporters.use!(
