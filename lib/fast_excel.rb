@@ -1,5 +1,6 @@
 require_relative './fast_excel/binding'
 require 'set'
+require 'date' # `write_value` converts Time values with `Time#to_datetime`, which the date library defines.
 
 # not used for now
 #require_relative '../ext/fast_excel/text_width_ext'
