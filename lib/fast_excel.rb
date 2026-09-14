@@ -1,5 +1,6 @@
 require_relative './fast_excel/binding'
 require 'set'
+require 'date' # `write_value` converts Time values with `Time#to_datetime`, which the date library defines.
 
 # not used for now
 #require_relative '../ext/fast_excel/text_width_ext'
@@ -464,7 +465,7 @@ module FastExcel
       if value.is_a?(Numeric)
         write_number(row_number, cell_number, value, format)
 
-      elsif value.is_a?(String) && value.match(/^(\d|\.)*%$/) # Percentages. e.g. "99%", "99.0003%", "99.00003%" but not "My percentage is 99.003%"
+      elsif value.is_a?(String) && value.match(/\A(\d|\.)*%\z/) # Percentages. e.g. "99%", "99.0003%", "99.00003%" but not "My percentage is 99.003%" or a multi-line note whose last line is "100%". \A and \z anchor the whole String; ^ and $ would match at any line boundary.
         value = value.delete_suffix( "%" )
         decimal_places = value.split( "." ).second&.size || 2 # Defaults to 2 decimal places if none are provided in the String.
         format ||= workbook.number_format("0." + ( "0" * decimal_places ) + "%")
@@ -478,7 +479,7 @@ module FastExcel
         format ||= workbook.number_format("yyyy-mm-dd hh:mm:ss")
         write_datetime(row_number, cell_number, FastExcel.lxw_datetime(value.to_datetime), format)
 
-      elsif value.is_a?(String) && value.match(/^(?:[01]\d|2[0123]):(?:[012345]\d):(?:[012345]\d)$/) # 24 hour times provided in the exact format hh:mm:ss.
+      elsif value.is_a?(String) && value.match(/\A(?:[01]\d|2[0123]):(?:[012345]\d):(?:[012345]\d)\z/) # 24 hour times provided in the exact format hh:mm:ss and nothing else in the String, so a multi-line note whose last line is "14:30:00" stays a String.
         format ||= workbook.number_format("hh:mm:ss")
         fraction_of_the_day = Time.parse( value ).seconds_since_midnight / 86_400 # 86400 seconds in a 24 hour day.
         write_number( row_number, cell_number, fraction_of_the_day, format )
