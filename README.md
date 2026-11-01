@@ -63,6 +63,11 @@ Also can use  `workbook.remove_tmp_folder` to delete tmp file manually
 workbook = FastExcel.open(constant_memory: true)
 ```
 
+**ZIP64**: needed when the file, or one sheet inside it, passes 4 GB. Without it `close` raises instead of writing a partial file
+```ruby
+workbook = FastExcel.open(constant_memory: true, use_zip64: true)
+```
+
 **Save to file**
 ```ruby
 workbook = FastExcel.open("my_dinner.xlsx")
