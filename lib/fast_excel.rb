@@ -23,7 +23,7 @@ module FastExcel
 
   DEF_COL_WIDTH = 8.43
 
-  def self.open(filename = nil, constant_memory: false, default_format: nil)
+  def self.open(filename = nil, constant_memory: false, default_format: nil, use_zip64: false)
     tmp_file = false
     if filename
       if File.exist?(filename) && File.size(filename) > 0
@@ -39,6 +39,7 @@ module FastExcel
 
     opt = Libxlsxwriter::WorkbookOptions.new
     opt[:constant_memory] = constant_memory ? 1 : 0
+    opt[:use_zip64] = use_zip64 ? 1 : 0 # Needed once the file, or any one XML part inside it, passes 4 GB. Off by default, as in libxlsxwriter.
     workbook = Libxlsxwriter.workbook_new_opt(filename, opt)
 
     result = Libxlsxwriter::Workbook.new(workbook)
@@ -400,7 +401,14 @@ module FastExcel
     def close
       @is_open = false
       @sheets.each(&:close)
-      super
+      error = super
+      if error != :no_error
+        error_code = ERROR_ENUM.find(error)
+        error_str = error_code ? Libxlsxwriter.strerror(error_code) : ''
+        raise "Could not write '#{filename}': (#{error_code} - #{error}) #{error_str}" # A file left behind is partial, e.g. missing xl/workbook.xml, so it must not be sent.
+      end
+
+      error
     end
 
     def read_string
